@@ -1,0 +1,66 @@
+---
+title: "Read OneDrive"
+author: "Richard Sprague"
+date: "6/4/2022"
+output: github_document
+---
+
+# Read and Write to OneDrive
+
+An [announcement by Hong](https://community.rstudio.com/t/microsoft365r-interface-to-microsoft-365-sharepoint-onedrive-etc/94287) at the RStudio Community Site points me to a library that can read and write to Microsoft 365 resources, including OneDrive. Is this my solution for reading Excel files online?
+
+First I install the package (if necessary) and get a pointer to my personal OneDrive.
+
+```{r setup, message = FALSE}
+library(tidyverse, quietly = TRUE)
+if(!require("Microsoft365R")) install.packages("Microsoft365R")
+
+od <- Microsoft365R::get_personal_onedrive()
+
+```
+
+The first time this is run, it will open a browser for you and ask for your Microsoft 365 credentials.
+
+```{r fileplay}
+od$list_items() %>% tail() %>% select(name, size, isdir)
+```
+
+## Read an Excel file
+
+I keep a copy of my health-related self-tracking in a complicated Excel file. Let's confirm that it's there.
+
+```{r, seeFiles}
+trackfilepath <- file.path("General/Health/Richard_Sprague_Tracking.xlsx")
+
+trackfile_item_list <- od$get_item_properties(trackfilepath)
+trackfile_item_list[["name"]]
+trackfile_item_list[["createdBy"]]
+
+```
+
+and now try to read it. It's easy to open it into a browser.
+
+```{r readExcelWeb}
+
+if(interactive()) od$open_item(trackfilepath) else "(shows in browser)"
+
+```
+
+To read it into a dataframe requires some roundabout action. I can grab the URL easily enough, but it appears I must then read the contents using `curl`.  Unfortunately that requires I make a separate, local copy of the file.
+
+```{r readExcel}
+trackfile_url <- trackfile_item_list[["@microsoft.graph.downloadUrl"]]
+
+destfile <- "tempCopy.xlsx"
+curl::curl_download(trackfile_url, destfile)
+Richard_Sprague_Tracking <- readxl::read_xlsx(destfile)
+
+head(Richard_Sprague_Tracking)[1:3]
+
+```
+
+But it works! and unlikely my [previous hack](https://richardsprague.com/post/2019/09/20/r-tude-read-onedrive-excel-files/) this one may preserve the correct URL across sessions.  #betterThanNothingIguess
+
+
+
+
