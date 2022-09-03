@@ -1,0 +1,59 @@
+---
+title: "Set Exif Data on an image file"
+author: "Richard Sprague"
+date: "6/4/2022"
+output: html_document
+---
+
+```{r setup, message=FALSE}
+library(tidyverse)
+library(magick)
+library(exiftoolr)
+
+
+photo_dir <- file.path("/Users/sprague/OneDrive/Pictures/Ancient/Photos 199x")
+photos_files <- dir(photo_dir, full.names = TRUE)
+
+```
+
+```{r more}
+
+photos_path <- list.files(photo_dir)
+
+#magick::image_read(file.path(photo_dir,photos_path[7]))
+
+image_info(image_read(photos_files[7]))
+
+exif_read(photos_files[1:5], tags = c( "imagesize", "Caption-Abstract"))
+
+photos_files <- dir(photo_dir, full.names = TRUE)
+exifinfo <- exif_read(photos_files[1])
+names(exifinfo)
+
+
+exif_call(args = c("-time:all"), path = photos_files[1])
+
+exif_call(args = c(""), path = photos_files[1])
+exif_call(args = c("-dateTimeOriginal=1984:11:17 12:00:00"), path = photos_files[7])
+exif_call(args = c("-Caption-Abstract=Don Sprague next to palm taken about 2 blocks from our house"), path = photos_files[7])
+exif_call(args = c("-iptc:Caption-Abstract=Palm"), path = photos_files[7])
+exif_call(args = c(""), path = photos_files[7])
+
+exif_change <- function(path, date_char, caption) {
+  exif_call(args = c(paste0("-iptc:Caption-Abstract=", caption),
+                     paste0("-dateTimeOriginal=",date_char," 12:00:00"),
+                     path = path))
+}
+
+exif_change(photos_files[6], "1987:07:04", "Gary riding a tractor in Sheldon Wisconsin")
+exif_change(photos_files[8], "1987:06:01", "Anton Pulokas in New Orleans")
+
+exif_call(args = c(""), path = photos_files[8])
+photos_files[8]
+
+
+exif_change(photo, "1988:01:17", "Don Sprague and Anton Pulokas")
+
+```
+
+
