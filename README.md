@@ -12,3 +12,4 @@ Simple examples of R Programming
 
 [Morph animation from two images](./image_before_after.md) Combine two images in a morphed animation.
 
+[Stitch Markdown Files](./stitchMarkdown.R) consolidate a bunch of Markdown files with their filenames embedded in the text.
